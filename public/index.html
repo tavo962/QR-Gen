@@ -1,89 +1,630 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Welcome to Firebase Hosting</title>
+<html lang="es-MX">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="QR Gen — Genera códigos QR gratis a partir de cualquier URL o red WiFi. Descarga en PNG. 100% gratuito.">
+  <title>QR Gen — Generador de Códigos QR Gratis</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
-    <!-- update the version number as needed -->
-    <script defer src="/__/firebase/12.13.0/firebase-app-compat.js"></script>
-    <!-- include only the Firebase features as you need -->
-    <script defer src="/__/firebase/12.13.0/firebase-auth-compat.js"></script>
-    <script defer src="/__/firebase/12.13.0/firebase-database-compat.js"></script>
-    <script defer src="/__/firebase/12.13.0/firebase-firestore-compat.js"></script>
-    <script defer src="/__/firebase/12.13.0/firebase-functions-compat.js"></script>
-    <script defer src="/__/firebase/12.13.0/firebase-messaging-compat.js"></script>
-    <script defer src="/__/firebase/12.13.0/firebase-storage-compat.js"></script>
-    <script defer src="/__/firebase/12.13.0/firebase-analytics-compat.js"></script>
-    <script defer src="/__/firebase/12.13.0/firebase-remote-config-compat.js"></script>
-    <script defer src="/__/firebase/12.13.0/firebase-performance-compat.js"></script>
-    <!-- 
-      initialize the SDK after all desired features are loaded, set useEmulator to false
-      to avoid connecting the SDK to running emulators.
-    -->
-    <script defer src="/__/firebase/init.js?useEmulator=true"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    <style media="screen">
-      body { background: #ECEFF1; color: rgba(0,0,0,0.87); font-family: Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; }
-      #message { background: white; max-width: 360px; margin: 100px auto 16px; padding: 32px 24px; border-radius: 3px; }
-      #message h2 { color: #ffa100; font-weight: bold; font-size: 16px; margin: 0 0 8px; }
-      #message h1 { font-size: 22px; font-weight: 300; color: rgba(0,0,0,0.6); margin: 0 0 16px;}
-      #message p { line-height: 140%; margin: 16px 0 24px; font-size: 14px; }
-      #message a { display: block; text-align: center; background: #039be5; text-transform: uppercase; text-decoration: none; color: white; padding: 16px; border-radius: 4px; }
-      #message, #message a { box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24); }
-      #load { color: rgba(0,0,0,0.4); text-align: center; font-size: 13px; }
-      @media (max-width: 600px) {
-        body, #message { margin-top: 0; background: white; box-shadow: none; }
-        body { border-top: 16px solid #ffa100; }
+    :root {
+      --bg:           #06060f;
+      --surface:      #0e0e22;
+      --surface2:     #15152e;
+      --purple:       #7c3aed;
+      --purple-light: #a855f7;
+      --purple-glow:  rgba(124,58,237,0.15);
+      --text:         #f0eeff;
+      --text-muted:   #8a89aa;
+      --border:       rgba(124,58,237,0.22);
+      --border-hover: rgba(168,85,247,0.55);
+      --radius:       18px;
+      --radius-sm:    12px;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: -180px; left: 50%;
+      transform: translateX(-50%);
+      width: 800px; height: 800px;
+      background: radial-gradient(circle, rgba(124,58,237,0.16) 0%, transparent 68%);
+      pointer-events: none; z-index: 0;
+    }
+
+    .app {
+      position: relative; z-index: 1;
+      max-width: 640px; margin: 0 auto;
+      padding: 24px 16px 56px;
+    }
+
+    /* ── HEADER ── */
+    .header { text-align: center; padding: 32px 0 32px; }
+
+    .badge-free {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(124,58,237,0.12);
+      border: 1px solid rgba(124,58,237,0.35);
+      color: var(--purple-light);
+      font-size: 0.7rem; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 5px 14px; border-radius: 100px; margin-bottom: 16px;
+    }
+    .badge-free::before {
+      content: ''; width: 6px; height: 6px;
+      background: var(--purple-light); border-radius: 50%;
+      animation: blink 2s ease-in-out infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1}50%{opacity:.35} }
+
+    .brand { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 8px; }
+    .brand-logo {
+      width: 44px; height: 44px;
+      background: linear-gradient(135deg, var(--purple), var(--purple-light));
+      border-radius: 11px; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 24px rgba(124,58,237,0.4);
+    }
+    .brand-name { font-size: 2.2rem; font-weight: 800; letter-spacing: -.5px; line-height: 1; }
+    .brand-name .accent { color: var(--purple-light); }
+    .tagline { color: var(--text-muted); font-size: .9rem; }
+
+    /* ── CARD ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px 20px;
+      margin-bottom: 14px;
+    }
+
+    /* ── TABS ── */
+    .tabs {
+      display: flex; gap: 5px;
+      background: var(--surface2);
+      border-radius: 11px; padding: 4px;
+      margin-bottom: 20px;
+    }
+    .tab {
+      flex: 1; background: transparent; border: none;
+      border-radius: 8px; padding: 9px 10px;
+      font-family: inherit; font-size: .88rem; font-weight: 600;
+      color: var(--text-muted); cursor: pointer;
+      transition: all .18s; display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .tab.active {
+      background: linear-gradient(135deg, var(--purple), var(--purple-light));
+      color: white; box-shadow: 0 2px 12px rgba(124,58,237,0.35);
+    }
+
+    /* ── INPUTS ── */
+    .input-label {
+      display: block; font-size: .75rem; font-weight: 700;
+      color: var(--text-muted); text-transform: uppercase;
+      letter-spacing: .08em; margin-bottom: 7px;
+    }
+    .field { margin-bottom: 11px; }
+
+    .ctrl {
+      width: 100%; background: var(--surface2);
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      padding: 11px 13px; font-size: .93rem; color: var(--text);
+      font-family: inherit; outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .ctrl::placeholder { color: var(--text-muted); }
+    .ctrl:focus { border-color: var(--purple-light); box-shadow: 0 0 0 3px rgba(168,85,247,0.13); }
+
+    select.ctrl {
+      appearance: none; -webkit-appearance: none; cursor: pointer;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a89aa' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 13px center; padding-right: 36px;
+    }
+
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    .checkbox-wrap {
+      display: flex; align-items: center; gap: 8px;
+      padding: 11px 13px; border-radius: var(--radius-sm);
+      border: 1px solid var(--border); background: var(--surface2);
+      cursor: pointer; font-size: .87rem; color: var(--text-muted);
+      font-weight: 500; height: 100%; transition: border-color .18s;
+    }
+    .checkbox-wrap:hover { border-color: var(--border-hover); }
+    .checkbox-wrap input[type=checkbox] { accent-color: var(--purple-light); width: 15px; height: 15px; cursor: pointer; }
+
+    /* ── GEN BUTTON ── */
+    .gen-btn {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%; margin-top: 14px;
+      background: linear-gradient(135deg, var(--purple), var(--purple-light));
+      color: white; border: none; border-radius: var(--radius-sm);
+      padding: 13px 22px; font-size: .97rem; font-weight: 700;
+      font-family: inherit; cursor: pointer;
+      transition: opacity .18s, transform .12s, box-shadow .18s;
+      box-shadow: 0 4px 20px rgba(124,58,237,0.35);
+    }
+    .gen-btn:hover  { opacity:.88; box-shadow: 0 6px 28px rgba(124,58,237,0.5); }
+    .gen-btn:active { transform: scale(.97); }
+
+    .error-msg { margin-top: 8px; color: #f87171; font-size: .82rem; font-weight: 500; min-height: 16px; }
+
+    /* ── PRIVACY ── */
+    .privacy-note {
+      display: flex; align-items: flex-start; gap: 8px;
+      margin-top: 14px; padding: 10px 12px;
+      background: rgba(16,185,129,0.07);
+      border: 1px solid rgba(16,185,129,0.2);
+      border-radius: var(--radius-sm);
+      font-size: .76rem; color: #6ee7b7; line-height: 1.5;
+    }
+    .privacy-note svg { flex-shrink: 0; margin-top: 1px; }
+
+    /* ── QR RESULT ── */
+    .qr-result { display: none; margin-bottom: 14px; animation: fadeUp .3s ease; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
+    .qr-card { text-align: center; }
+    .qr-wrapper {
+      display: inline-block; background: white;
+      padding: 18px; border-radius: var(--radius-sm); margin-bottom: 14px;
+      box-shadow: 0 0 50px rgba(124,58,237,0.28);
+    }
+    .qr-wrapper img    { display: block; max-width: 100%; }
+    .qr-wrapper canvas { display: none; }
+
+    .qr-label {
+      font-size: .79rem; color: var(--text-muted);
+      word-break: break-all; margin-bottom: 16px;
+      padding: 0 4px; line-height: 1.6;
+    }
+
+    .download-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: transparent; border: 1px solid var(--border-hover);
+      color: var(--purple-light); border-radius: var(--radius-sm);
+      padding: 11px 26px; font-size: .9rem; font-weight: 600;
+      font-family: inherit; cursor: pointer;
+      transition: background .2s, transform .1s;
+    }
+    .download-btn:hover  { background: var(--purple-glow); }
+    .download-btn:active { transform: scale(.97); }
+
+    /* ── HISTORY ── */
+    .history-section { display: none; animation: fadeUp .3s ease; }
+
+    .section-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .section-title {
+      display: flex; align-items: center; gap: 7px;
+      font-size: .72rem; font-weight: 700; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: .09em;
+    }
+    .clear-all-btn {
+      background: transparent; border: none; cursor: pointer;
+      color: #f87171; font-size: .73rem; font-weight: 600;
+      font-family: inherit; padding: 2px 6px;
+      transition: opacity .18s;
+    }
+    .clear-all-btn:hover { opacity: .75; }
+
+    .history-grid { display: flex; flex-direction: column; gap: 7px; }
+
+    .history-item {
+      display: flex; align-items: center; gap: 12px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 9px 12px;
+      cursor: pointer; transition: border-color .18s, background .18s;
+      animation: fadeUp .25s ease;
+    }
+    .history-item:hover { border-color: var(--border-hover); background: var(--surface2); }
+
+    .hist-thumb {
+      flex-shrink: 0; background: white; padding: 3px;
+      border-radius: 6px; width: 50px; height: 50px;
+      display: flex; align-items: center; justify-content: center; overflow: hidden;
+    }
+    .hist-thumb img    { width: 44px !important; height: 44px !important; display: block !important; }
+    .hist-thumb canvas { display: none !important; }
+
+    .hist-info { flex: 1; min-width: 0; }
+    .hist-url {
+      display: block; font-size: .84rem; font-weight: 500; color: var(--text);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px;
+    }
+    .hist-meta { font-size: .71rem; color: var(--text-muted); display: flex; align-items: center; gap: 4px; }
+
+    .hist-del {
+      flex-shrink: 0; background: transparent; border: none; cursor: pointer;
+      color: var(--text-muted); font-size: 1.1rem; line-height: 1;
+      padding: 4px 6px; border-radius: 6px;
+      transition: color .15s, background .15s;
+    }
+    .hist-del:hover { color: #f87171; background: rgba(248,113,113,0.1); }
+
+    /* ── FOOTER ── */
+    .footer {
+      text-align: center; margin-top: 44px; padding-top: 18px;
+      border-top: 1px solid var(--border);
+      color: var(--text-muted); font-size: .78rem; line-height: 1.7;
+    }
+    .footer a { color: var(--purple-light); text-decoration: none; font-weight: 600; }
+    .footer a:hover { text-decoration: underline; }
+
+    /* ── DESKTOP: 2 COLUMNAS ── */
+    @media (min-width: 960px) {
+      .app { max-width: 1080px; padding: 44px 32px 72px; }
+      .header { padding: 40px 0 40px; }
+      .brand-name { font-size: 2.6rem; }
+
+      .main-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        align-items: start;
       }
-    </style>
-  </head>
-  <body>
-    <div id="message">
-      <h2>Welcome</h2>
-      <h1>Firebase Hosting Setup Complete</h1>
-      <p>You're seeing this because you've successfully setup Firebase Hosting. Now it's time to go build something extraordinary!</p>
-      <a target="_blank" href="https://firebase.google.com/docs/hosting/">Open Hosting Documentation</a>
+      /* el QR result y el historial van en la columna derecha */
+      .col-left  { grid-column: 1; }
+      .col-right { grid-column: 2; }
+
+      /* en desktop el generador se queda fijo al hacer scroll */
+      .col-left { position: sticky; top: 24px; }
+
+      .gen-btn { margin-top: 16px; }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="badge-free">Gratis · 100% gratuita</div>
+    <div class="brand">
+      <div class="brand-logo">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="7" rx="1"/>
+          <rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/>
+          <rect x="5.5" y="5.5" width="2" height="2" fill="white" stroke="none"/>
+          <rect x="16.5" y="5.5" width="2" height="2" fill="white" stroke="none"/>
+          <rect x="5.5" y="16.5" width="2" height="2" fill="white" stroke="none"/>
+          <rect x="14" y="14" width="2" height="2" fill="white" stroke="none"/>
+          <rect x="18" y="14" width="3" height="2" fill="white" stroke="none"/>
+          <rect x="14" y="18" width="3" height="3" fill="white" stroke="none"/>
+          <rect x="19" y="18" width="2" height="3" fill="white" stroke="none"/>
+        </svg>
+      </div>
+      <h1 class="brand-name">QR <span class="accent">Gen</span></h1>
     </div>
-    <p id="load">Firebase SDK Loading&hellip;</p>
+    <p class="tagline">Convierte cualquier URL o red WiFi en un código QR</p>
+  </header>
 
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        const loadEl = document.querySelector('#load');
-        // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
-        // // The Firebase SDK is initialized and available here!
-        //
-        // firebase.auth().onAuthStateChanged(user => { });
-        // firebase.database().ref('/path/to/ref').on('value', snapshot => { });
-        // firebase.firestore().doc('/foo/bar').get().then(() => { });
-        // firebase.functions().httpsCallable('yourFunction')().then(() => { });
-        // firebase.messaging().requestPermission().then(() => { });
-        // firebase.storage().ref('/path/to/ref').getDownloadURL().then(() => { });
-        // firebase.analytics(); // call to activate
-        // firebase.analytics().logEvent('tutorial_completed');
-        // firebase.performance(); // call to activate
-        //
-        // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
+  <main>
+    <div class="main-grid">
 
-        try {
-          let app = firebase.app();
-          let features = [
-            'auth', 
-            'database', 
-            'firestore',
-            'functions',
-            'messaging', 
-            'storage', 
-            'analytics', 
-            'remoteConfig',
-            'performance',
-          ].filter(feature => typeof app[feature] === 'function');
-          loadEl.textContent = `Firebase SDK loaded with ${features.join(', ')}`;
-        } catch (e) {
-          console.error(e);
-          loadEl.textContent = 'Error loading the Firebase SDK, check the console.';
+      <!-- COLUMNA IZQUIERDA: Generador -->
+      <div class="col-left">
+        <section class="card" id="generator-card">
+
+          <!-- TABS -->
+          <div class="tabs">
+            <button class="tab active" id="tab-url" onclick="switchTab('url')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+              </svg>
+              URL
+            </button>
+            <button class="tab" id="tab-wifi" onclick="switchTab('wifi')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 12.55a11 11 0 0 1 14.08 0"/>
+                <path d="M1.42 9a16 16 0 0 1 21.16 0"/>
+                <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
+                <circle cx="12" cy="20" r="1" fill="currentColor"/>
+              </svg>
+              WiFi
+            </button>
+          </div>
+
+          <!-- FORM URL -->
+          <div id="form-url">
+            <div class="field">
+              <label class="input-label" for="url-input">URL a convertir</label>
+              <input type="url" id="url-input" class="ctrl"
+                placeholder="https://ejemplo.com"
+                autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
+            </div>
+          </div>
+
+          <!-- FORM WIFI -->
+          <div id="form-wifi" style="display:none">
+            <div class="field">
+              <label class="input-label" for="wifi-ssid">Nombre de la red (SSID)</label>
+              <input type="text" id="wifi-ssid" class="ctrl" placeholder="MiRedWiFi"
+                autocomplete="off" autocorrect="off" spellcheck="false">
+            </div>
+            <div class="two-col field">
+              <div>
+                <label class="input-label" for="wifi-security">Seguridad</label>
+                <select id="wifi-security" class="ctrl">
+                  <option value="WPA">WPA / WPA2 / WPA3</option>
+                  <option value="WEP">WEP</option>
+                  <option value="nopass">Sin contraseña</option>
+                </select>
+              </div>
+              <div>
+                <label class="input-label">&nbsp;</label>
+                <label class="checkbox-wrap">
+                  <input type="checkbox" id="wifi-hidden">
+                  Red oculta
+                </label>
+              </div>
+            </div>
+            <div class="field" id="wifi-pass-field">
+              <label class="input-label" for="wifi-pass">Contraseña</label>
+              <input type="password" id="wifi-pass" class="ctrl" placeholder="••••••••" autocomplete="off">
+            </div>
+          </div>
+
+          <!-- BOTÓN -->
+          <button class="gen-btn" id="gen-btn">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="7" height="7" rx="1"/>
+              <rect x="14" y="3" width="7" height="7" rx="1"/>
+              <rect x="3" y="14" width="7" height="7" rx="1"/>
+              <rect x="14" y="14" width="7" height="7" rx="1"/>
+            </svg>
+            Generar QR
+          </button>
+
+          <p class="error-msg" id="error-msg"></p>
+
+          <!-- PRIVACIDAD -->
+          <div class="privacy-note">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            Esta herramienta <strong>no guarda ni almacena ningún dato</strong> en servidores.
+            El historial es local en tu dispositivo y nunca sale de tu navegador.
+          </div>
+
+        </section>
+      </div><!-- /col-left -->
+
+      <!-- COLUMNA DERECHA: Resultado + Historial -->
+      <div class="col-right">
+
+        <!-- QR RESULT -->
+        <section class="qr-result card" id="qr-result">
+          <div class="qr-card">
+            <div class="qr-wrapper">
+              <div id="qrcode"></div>
+            </div>
+            <p class="qr-label" id="qr-label"></p>
+            <button class="download-btn" id="download-btn">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              Descargar PNG
+            </button>
+          </div>
+        </section>
+
+        <!-- HISTORIAL -->
+        <section class="history-section" id="history-section">
+          <div class="section-header">
+            <h3 class="section-title">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+              </svg>
+              Últimos 5 QR generados
+            </h3>
+            <button class="clear-all-btn" onclick="borrarTodo()">Borrar todo</button>
+          </div>
+          <div class="history-grid" id="history-grid"></div>
+        </section>
+
+      </div><!-- /col-right -->
+
+    </div><!-- /main-grid -->
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <p>Desarrollado con IA por <a href="https://github.com/tavo962" target="_blank" rel="noopener">@tavo962</a></p>
+  </footer>
+
+</div>
+<script>
+  const HISTORY_KEY = 'qrgen_v2';
+  let historial = [];
+  try { historial = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch(_) {}
+
+  let tabActual = 'url';
+  let qrActual  = null;
+
+  /* ── Tabs ── */
+  function switchTab(tab) {
+    tabActual = tab;
+    document.getElementById('tab-url').classList.toggle('active', tab === 'url');
+    document.getElementById('tab-wifi').classList.toggle('active', tab === 'wifi');
+    document.getElementById('form-url').style.display  = tab === 'url'  ? 'block' : 'none';
+    document.getElementById('form-wifi').style.display = tab === 'wifi' ? 'block' : 'none';
+    limpiarError();
+  }
+
+  document.getElementById('wifi-security').addEventListener('change', function() {
+    document.getElementById('wifi-pass-field').style.display = this.value === 'nopass' ? 'none' : 'block';
+  });
+
+  /* ── Helpers ── */
+  function isValidUrl(s) {
+    try { var u = new URL(s); return u.protocol === 'http:' || u.protocol === 'https:'; }
+    catch(_) { return false; }
+  }
+  function escapeWifi(s) {
+    return s.replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,')
+            .replace(/"/g,'\\"').replace(/:/g,'\\:');
+  }
+  function mostrarError(m) { document.getElementById('error-msg').textContent = m; }
+  function limpiarError()  { document.getElementById('error-msg').textContent = ''; }
+  function truncar(s,n)    { n=n||52; return s.length>n ? s.slice(0,n)+'…' : s; }
+  function esc(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  /* ── Generar ── */
+  function generarQR() {
+    limpiarError();
+    var texto, label, filename;
+
+    if (tabActual === 'url') {
+      var url = document.getElementById('url-input').value.trim();
+      if (!url) { mostrarError('Por favor, ingresa una URL.'); return; }
+      if (!/^https?:\/\//i.test(url)) {
+        url = 'https://' + url;
+        document.getElementById('url-input').value = url;
+      }
+      if (!isValidUrl(url)) { mostrarError('La URL no es válida. Ej: https://google.com'); return; }
+      texto = url; label = url;
+      try { filename = 'qr-' + new URL(url).hostname.replace('www.',''); }
+      catch(_) { filename = 'qr-url'; }
+
+    } else {
+      var ssid = document.getElementById('wifi-ssid').value.trim();
+      var sec  = document.getElementById('wifi-security').value;
+      var pass = document.getElementById('wifi-pass').value;
+      var hid  = document.getElementById('wifi-hidden').checked;
+
+      if (!ssid) { mostrarError('Ingresa el nombre de la red (SSID).'); return; }
+      if (sec !== 'nopass' && !pass) { mostrarError('Ingresa la contraseña de la red.'); return; }
+
+      texto    = 'WIFI:T:' + sec + ';S:' + escapeWifi(ssid) + ';P:' + escapeWifi(pass) + ';H:' + (hid?'true':'false') + ';;';
+      label    = 'WiFi: ' + ssid;
+      filename = 'qr-wifi-' + ssid.replace(/\s+/g,'-').toLowerCase();
+    }
+
+    qrActual = { texto: texto, label: label, filename: filename };
+    renderQR(texto, label);
+    agregarHistorial({ texto: texto, label: label, filename: filename,
+      fecha: new Date().toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'}) });
+
+    setTimeout(function() {
+      document.getElementById('qr-result').scrollIntoView({ behavior:'smooth', block:'nearest' });
+    }, 180);
+  }
+
+  function renderQR(texto, label) {
+    var c = document.getElementById('qrcode');
+    c.innerHTML = '';
+    new QRCode(c, { text: texto, width: 256, height: 256,
+      colorDark:'#000000', colorLight:'#ffffff', correctLevel: QRCode.CorrectLevel.H });
+    document.getElementById('qr-label').textContent = label;
+    document.getElementById('qr-result').style.display = 'block';
+  }
+
+  /* ── Descargar PNG ── */
+  function descargarPNG() {
+    var img = document.querySelector('#qrcode img');
+    if (!img || !img.src) { mostrarError('Genera un QR primero.'); return; }
+    var a = document.createElement('a');
+    a.download = (qrActual ? qrActual.filename : 'qr-code') + '.png';
+    a.href = img.src;
+    a.click();
+  }
+
+  /* ── Historial ── */
+  function guardarHistorial() {
+    try { localStorage.setItem(HISTORY_KEY, JSON.stringify(historial)); } catch(_) {}
+  }
+
+  function agregarHistorial(item) {
+    historial = historial.filter(function(h){ return h.texto !== item.texto; });
+    historial.unshift(item);
+    historial = historial.slice(0, 5);
+    guardarHistorial();
+    renderHistorial();
+  }
+
+  function borrarItem(i, e) {
+    e.stopPropagation();
+    historial.splice(i, 1);
+    guardarHistorial();
+    renderHistorial();
+  }
+
+  function borrarTodo() {
+    historial = [];
+    guardarHistorial();
+    renderHistorial();
+  }
+
+  var SVG_WIFI = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1" fill="currentColor"/></svg>';
+  var SVG_LINK = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
+
+  function renderHistorial() {
+    var sec  = document.getElementById('history-section');
+    var grid = document.getElementById('history-grid');
+    if (!historial.length) { sec.style.display = 'none'; return; }
+    sec.style.display = 'block';
+
+    grid.innerHTML = historial.map(function(item, i) {
+      var icono = item.texto.startsWith('WIFI:') ? SVG_WIFI : SVG_LINK;
+      return [
+        '<div class="history-item" onclick="cargarHistorial('+i+')">',
+        '  <div class="hist-thumb" id="hist-'+i+'"></div>',
+        '  <div class="hist-info">',
+        '    <span class="hist-url">'+esc(truncar(item.label))+'</span>',
+        '    <span class="hist-meta">'+icono+' '+esc(item.fecha)+'</span>',
+        '  </div>',
+        '  <button class="hist-del" onclick="borrarItem('+i+',event)" title="Eliminar">✕</button>',
+        '</div>'
+      ].join('');
+    }).join('');
+
+    historial.forEach(function(item, i) {
+      setTimeout(function() {
+        var el = document.getElementById('hist-'+i);
+        if (el && !el.querySelector('img,canvas')) {
+          new QRCode(el, { text: item.texto, width: 44, height: 44,
+            colorDark:'#000', colorLight:'#fff', correctLevel: QRCode.CorrectLevel.L });
         }
-      });
-    </script>
-  </body>
+      }, i * 70);
+    });
+  }
+
+  function cargarHistorial(i) {
+    var item = historial[i];
+    if (!item) return;
+    qrActual = { texto: item.texto, label: item.label, filename: item.filename || 'qr-code' };
+    renderQR(item.texto, item.label);
+  }
+
+  /* ── Eventos ── */
+  document.getElementById('gen-btn').addEventListener('click', generarQR);
+  document.getElementById('download-btn').addEventListener('click', descargarPNG);
+  document.getElementById('url-input').addEventListener('keydown', function(e){ if(e.key==='Enter') generarQR(); });
+  document.getElementById('wifi-ssid').addEventListener('keydown', function(e){ if(e.key==='Enter') generarQR(); });
+  document.getElementById('wifi-pass').addEventListener('keydown', function(e){ if(e.key==='Enter') generarQR(); });
+
+  renderHistorial();
+</script>
+</body>
 </html>
