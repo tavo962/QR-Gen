@@ -5,9 +5,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="QR Gen — Genera códigos QR gratis a partir de cualquier URL o red WiFi. Descarga en PNG. 100% gratuito.">
   <title>QR Gen — Generador de Códigos QR Gratis</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="/img/icon.png">
+  <link rel="apple-touch-icon" href="/img/icon.png">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="QR Gen — Generador de Códigos QR Gratis">
+  <meta property="og:description" content="Genera códigos QR a partir de cualquier URL o red WiFi. Descarga en PNG. 100% gratuito.">
+  <meta property="og:image" content="https://qrgen-a7a99.web.app/img/icon.png">
+  <meta property="og:url" content="https://qrgen-a7a99.web.app">
+  <meta property="og:type" content="website">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="QR Gen — Generador de Códigos QR Gratis">
+  <meta name="twitter:description" content="Genera códigos QR a partir de cualquier URL o red WiFi. Gratis.">
+  <meta name="twitter:image" content="https://qrgen-a7a99.web.app/img/icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
 
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -182,8 +199,8 @@
       padding: 18px; border-radius: var(--radius-sm); margin-bottom: 14px;
       box-shadow: 0 0 50px rgba(124,58,237,0.28);
     }
-    .qr-wrapper img    { display: block; max-width: 100%; }
-    .qr-wrapper canvas { display: none; }
+    /* QRious dibuja directamente en canvas */
+    .qr-wrapper canvas { display: block; max-width: 100%; height: auto; }
 
     .qr-label {
       font-size: .79rem; color: var(--text-muted);
@@ -238,8 +255,7 @@
       border-radius: 6px; width: 50px; height: 50px;
       display: flex; align-items: center; justify-content: center; overflow: hidden;
     }
-    .hist-thumb img    { width: 44px !important; height: 44px !important; display: block !important; }
-    .hist-thumb canvas { display: none !important; }
+    .hist-thumb canvas { width: 44px !important; height: 44px !important; display: block !important; }
 
     .hist-info { flex: 1; min-width: 0; }
     .hist-url {
@@ -399,8 +415,7 @@
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
             </svg>
-            Esta herramienta <strong>no guarda ni almacena ningún dato</strong> en servidores.
-            El historial es local en tu dispositivo y nunca sale de tu navegador.
+            <span>Esta herramienta <strong>no guarda ni almacena ningún dato</strong> en servidores. El historial es local en tu dispositivo y nunca sale de tu navegador.</span>
           </div>
 
         </section>
@@ -534,19 +549,21 @@
   function renderQR(texto, label) {
     var c = document.getElementById('qrcode');
     c.innerHTML = '';
-    new QRCode(c, { text: texto, width: 256, height: 256,
-      colorDark:'#000000', colorLight:'#ffffff', correctLevel: QRCode.CorrectLevel.H });
+    var canvas = document.createElement('canvas');
+    c.appendChild(canvas);
+    new QRious({ element: canvas, value: texto, size: 256,
+      level: 'H', background: 'white', foreground: 'black' });
     document.getElementById('qr-label').textContent = label;
     document.getElementById('qr-result').style.display = 'block';
   }
 
   /* ── Descargar PNG ── */
   function descargarPNG() {
-    var img = document.querySelector('#qrcode img');
-    if (!img || !img.src) { mostrarError('Genera un QR primero.'); return; }
+    var canvas = document.querySelector('#qrcode canvas');
+    if (!canvas) { mostrarError('Genera un QR primero.'); return; }
     var a = document.createElement('a');
     a.download = (qrActual ? qrActual.filename : 'qr-code') + '.png';
-    a.href = img.src;
+    a.href = canvas.toDataURL('image/png');
     a.click();
   }
 
@@ -602,11 +619,13 @@
     historial.forEach(function(item, i) {
       setTimeout(function() {
         var el = document.getElementById('hist-'+i);
-        if (el && !el.querySelector('img,canvas')) {
-          new QRCode(el, { text: item.texto, width: 44, height: 44,
-            colorDark:'#000', colorLight:'#fff', correctLevel: QRCode.CorrectLevel.L });
+        if (el && !el.querySelector('canvas')) {
+          var tc = document.createElement('canvas');
+          el.appendChild(tc);
+          new QRious({ element: tc, value: item.texto, size: 44,
+            level: 'L', background: 'white', foreground: 'black' });
         }
-      }, i * 70);
+      }, i * 60);
     });
   }
 
